@@ -25,6 +25,10 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Search & Filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+
   // Form State
   const [formData, setFormData] = useState({
     title: '',
@@ -205,6 +209,37 @@ export default function AdminProducts() {
         </button>
       </div>
 
+      {/* Search & Filters */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1 group">
+          <input
+            type="text"
+            placeholder="Search manifest by name or type..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-bg-card border border-white/5 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-brand-primary/50 transition-all shadow-inner group-hover:border-white/10"
+          />
+        </div>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="bg-bg-card border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-primary/50 transition-all cursor-pointer uppercase text-xs font-bold tracking-widest hover:border-white/10"
+        >
+          <option value="all">ALL TYPES</option>
+          <option value="skin">SKINS</option>
+          <option value="apparel">APPAREL</option>
+          <option value="attachment">ATTACHMENTS</option>
+          <option value="individual">INDIVIDUALS</option>
+        </select>
+        <button 
+          onClick={() => { setSearchTerm(''); setTypeFilter('all'); }}
+          className="bg-white/5 hover:bg-white/10 text-white/40 hover:text-white px-4 py-3 rounded-xl transition-all flex items-center justify-center border border-white/5"
+          title="Clear Filters"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
       {/* Data Grid table */}
       <div className="bg-bg-card border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
@@ -221,10 +256,21 @@ export default function AdminProducts() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-sm">
-              {products.map((product) => {
-                const img = product.imageUrl || (product.images && product.images[0]);
-                const art = artists.find(a => a.id === product.artistId)?.name || <span className="text-white/20 italic">None</span>;
-                const col = collections.find(c => c.id === product.collectionId)?.name || <span className="text-white/20 italic">None</span>;
+              {products
+                .filter(p => {
+                  const matchesSearch = (p.name || p.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                       (p.type || '').toLowerCase().includes(searchTerm.toLowerCase());
+                  const matchesType = typeFilter === 'all' || (p.type || p.category) === typeFilter;
+                  return matchesSearch && matchesType;
+                })
+                .map((product) => {
+                  const stock = product.stockQuantity ?? product.inventory ?? 0;
+                  const isLow = stock < 10 && stock > 0;
+                  const isOut = stock === 0;
+                  
+                  const img = product.imageUrl || (product.images && product.images[0]);
+                  const art = artists.find(a => a.id === product.artistId)?.name || <span className="text-white/20 italic">None</span>;
+                  const col = collections.find(c => c.id === product.collectionId)?.name || <span className="text-white/20 italic">None</span>;
                 
                 return (
                   <tr key={product.id} className="hover:bg-white/[0.02] transition-colors group">
@@ -254,8 +300,15 @@ export default function AdminProducts() {
                     <td className="px-6 py-4 text-white/70">{art}</td>
                     <td className="px-6 py-4 text-white/70">{col}</td>
                     <td className="px-6 py-4 text-right font-mono text-brand-primary">₱{product.price?.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-right">
-                      {product.stockQuantity ?? product.inventory}
+                    <td className="px-6 py-4 text-right font-mono">
+                      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-black uppercase border ${
+                        isOut ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                        isLow ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                        'bg-brand-primary/10 text-brand-primary border-brand-primary/20'
+                      }`}>
+                        {stock}
+                        <span className="opacity-50">{isOut ? 'OUT' : isLow ? 'LOW' : 'QTY'}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
