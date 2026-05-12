@@ -327,7 +327,7 @@ export default function AdminOrders() {
       {!loading && !error && orders.length > 0 && (
         <div className="bg-bg-card border border-white/5 rounded-2xl overflow-hidden">
           {/* Table Header */}
-          <div className="hidden lg:grid grid-cols-[50px_2fr_2fr_1.5fr_1fr_1.5fr_2fr_auto] gap-4 px-6 py-3 border-b border-white/5 items-center">
+          <div className="hidden lg:grid grid-cols-[50px_1.5fr_2fr_1.5fr_1fr_1fr_2fr_120px_50px] gap-4 px-6 py-3 border-b border-white/5 items-center">
             <button 
               onClick={toggleSelectAll} 
               data-testid="select-all-orders"
@@ -339,12 +339,12 @@ export default function AdminOrders() {
               <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Order ID</span>
               {selectedOrders.length > 0 && (
                 <span className="px-1.5 py-0.5 rounded bg-brand-primary text-black text-[8px] font-black">
-                  {selectedOrders.length} SELECTED
+                  {selectedOrders.length}
                 </span>
               )}
             </div>
-            {['Customer', 'Date', 'Total', 'Game Tag', 'Status', 'Actions'].map(h => (
-              <span key={h} className="text-[10px] font-black uppercase tracking-widest text-white/30">{h}</span>
+            {['Customer', 'Date', 'Total', 'Game Tag', 'Status', 'Action', ''].map((h, i) => (
+              <span key={i} className={`text-[10px] font-black uppercase tracking-widest text-white/30 ${h === '' ? 'text-right' : ''}`}>{h}</span>
             ))}
           </div>
 
@@ -361,7 +361,7 @@ export default function AdminOrders() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.03)" }}
-                  className={`grid grid-cols-1 lg:grid-cols-[50px_2fr_2fr_1.5fr_1fr_1.5fr_2fr_auto] gap-4 items-center px-6 py-5 transition-all group cursor-default border-l-2 ${selectedOrders.includes(order._id) ? 'bg-brand-primary/5 border-brand-primary' : 'border-transparent'}`}
+                  className={`grid grid-cols-1 lg:grid-cols-[50px_1.5fr_2fr_1.5fr_1fr_1fr_2fr_120px_50px] gap-4 items-center px-6 py-5 transition-all group cursor-default border-l-2 ${selectedOrders.includes(order._id) ? 'bg-brand-primary/5 border-brand-primary' : 'border-transparent'}`}
                 >
                   {/* Checkbox */}
                   <div className="hidden lg:block">
@@ -376,13 +376,13 @@ export default function AdminOrders() {
                   {/* Order ID */}
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 lg:hidden mb-1">Order ID</p>
-                    <p className="text-xs font-mono font-bold text-white/40 group-hover:text-brand-primary transition-colors tracking-tighter">#{order._id.toUpperCase()}</p>
+                    <p className="text-xs font-mono font-bold text-white/40 group-hover:text-brand-primary transition-colors tracking-tighter truncate">#{order._id.toUpperCase()}</p>
                   </div>
 
                   {/* Customer */}
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 lg:hidden mb-1">Customer</p>
-                    <p className="text-sm font-black text-white truncate group-hover:translate-x-1 transition-transform">{order.userId?.name ?? 'Anonymous User'}</p>
+                    <p className="text-sm font-black text-white truncate">{order.userId?.name ?? 'Anonymous User'}</p>
                     <p className="text-[10px] text-white/30 font-mono truncate">{order.userId?.email ?? 'guest_session_active'}</p>
                   </div>
 
@@ -400,13 +400,13 @@ export default function AdminOrders() {
                   {/* Total */}
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 lg:hidden mb-1">Valuation</p>
-                    <p className="text-lg font-black text-brand-primary tracking-tighter">₱{order.totalAmount.toFixed(2)}</p>
+                    <p className="text-sm font-black text-brand-primary tracking-tighter">₱{order.totalAmount.toFixed(2)}</p>
                   </div>
 
                   {/* Game Tag */}
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/20 lg:hidden mb-1">Sector Tag</p>
-                    <p className="text-xs font-black text-white/40 uppercase tracking-widest">{order.gameTag || '—'}</p>
+                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest truncate">{order.gameTag || '—'}</p>
                   </div>
 
                   {/* Status Select */}
@@ -419,14 +419,14 @@ export default function AdminOrders() {
                           Syncing...
                         </div>
                       ) : (
-                        <div className="relative inline-block w-full max-w-[180px]">
+                        <div className="relative inline-block w-full">
                           <div className={`absolute inset-y-0 left-3.5 flex items-center pointer-events-none`}>
                             <StatusIcon className={`w-3.5 h-3.5 ${statusCfg.color.split(' ')[0]}`} />
                           </div>
                           <select
                             value={order.status}
                             onChange={e => handleStatusChange(order._id, e.target.value)}
-                            className={`w-full appearance-none pl-10 pr-8 py-2.5 rounded-xl border text-[10px] font-black uppercase tracking-widest cursor-pointer focus:outline-none transition-all hover:brightness-110 active:scale-95 ${statusCfg.color} bg-black/40`}
+                            className={`w-full appearance-none pl-10 pr-8 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-widest cursor-pointer focus:outline-none transition-all hover:brightness-110 active:scale-95 ${statusCfg.color} bg-black/40`}
                           >
                             {STATUS_OPTIONS.map(s => (
                               <option key={s} value={s} className="bg-bg-dark text-white uppercase font-black">
@@ -442,18 +442,18 @@ export default function AdminOrders() {
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
+                  {/* Status Action Slot (Fixed Width) */}
+                  <div className="flex justify-center w-[120px]">
                     <AnimatePresence mode="wait">
                       {order.status === 'pending' && (
                         <motion.button
+                          key="process"
                           data-testid={`process-btn-${order._id}`}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
                           onClick={() => handleStatusChange(order._id, 'processing')}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white border border-blue-500/20 text-[9px] font-black uppercase tracking-widest transition-all"
-                          title="Start Processing"
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white border border-blue-500/20 text-[9px] font-black uppercase tracking-widest transition-all"
                         >
                           <Play className="w-3 h-3" />
                           Process
@@ -461,23 +461,30 @@ export default function AdminOrders() {
                       )}
                       {order.status === 'processing' && (
                         <motion.button
+                          key="complete"
                           data-testid={`complete-btn-${order._id}`}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
                           onClick={() => handleStatusChange(order._id, 'completed')}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-primary/10 hover:bg-brand-primary text-brand-primary hover:text-black border border-brand-primary/20 text-[9px] font-black uppercase tracking-widest transition-all"
-                          title="Complete Order"
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-brand-primary/10 hover:bg-brand-primary text-brand-primary hover:text-black border border-brand-primary/20 text-[9px] font-black uppercase tracking-widest transition-all"
                         >
                           <PackageCheck className="w-3 h-3" />
                           Complete
                         </motion.button>
                       )}
+                      {/* Empty state for other statuses to maintain alignment */}
+                      {!['pending', 'processing'].includes(order.status) && (
+                        <div className="w-full h-8" />
+                      )}
                     </AnimatePresence>
-                    
+                  </div>
+                  
+                  {/* View Action Slot */}
+                  <div className="flex justify-end">
                     <button
                       onClick={() => setExpandedOrder(order)}
-                      className="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-white transition-all"
+                      className="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-white transition-all shadow-sm"
                       title="Inspect components"
                     >
                       <Eye className="w-4 h-4" />
