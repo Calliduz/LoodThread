@@ -132,7 +132,7 @@ export default function Register() {
                 onChange={e => setPassword(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-12 text-white focus:outline-none focus:border-brand-primary/50 transition-colors"
                 required
-                minLength={6}
+                minLength={8}
               />
               <button
                 type="button"

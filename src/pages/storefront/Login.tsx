@@ -28,8 +28,8 @@ export default function Login() {
       setError('Please enter a valid email address.');
       return;
     }
-    if (password.length < 6) {
-      setError('Passcode must be at least 6 characters.');
+    if (password.length < 8) {
+      setError('Passcode must be at least 8 characters.');
       return;
     }
 

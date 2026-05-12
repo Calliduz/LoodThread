@@ -143,6 +143,26 @@ function CheckoutForm({
     setProcessing(true);
     setError('');
 
+    // --- Address Validation ---
+    if (selectedAddrIdx === 'new') {
+      if (!manualAddr.street.trim() || !manualAddr.city.trim() || !manualAddr.zip.trim() || !manualAddr.country.trim()) {
+        const msg = 'Please fill in all address fields.';
+        setError(msg); toast.error(msg);
+        setProcessing(false); return;
+      }
+      // ZIP validation: numeric only
+      if (!/^\d+$/.test(manualAddr.zip.trim())) {
+        const msg = 'ZIP code must contain only numbers.';
+        setError(msg); toast.error(msg);
+        setProcessing(false); return;
+      }
+      if (manualAddr.zip.trim().length < 4) {
+        const msg = 'ZIP code is too short.';
+        setError(msg); toast.error(msg);
+        setProcessing(false); return;
+      }
+    }
+
     try {
       const { error: stripeError, paymentIntent } = await stripe.confirmPayment({ elements, redirect: 'if_required' });
       if (stripeError) {
@@ -235,7 +255,19 @@ function CheckoutForm({
                           <input type="text" placeholder="Street Address" required value={manualAddr.street} onChange={e => setManualAddr({ ...manualAddr, street: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-primary/50 placeholder-white/20" />
                           <div className="flex gap-2">
                             <input type="text" placeholder="City" required value={manualAddr.city} onChange={e => setManualAddr({ ...manualAddr, city: e.target.value })} className="w-1/2 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-primary/50 placeholder-white/20" />
-                            <input type="text" placeholder="ZIP" required value={manualAddr.zip} onChange={e => setManualAddr({ ...manualAddr, zip: e.target.value })} className="w-1/2 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-primary/50 placeholder-white/20" />
+                            <input 
+                              type="text" 
+                              placeholder="ZIP" 
+                              required 
+                              value={manualAddr.zip} 
+                              onChange={e => {
+                                const val = e.target.value.replace(/\D/g, ''); // Numeric only
+                                setManualAddr({ ...manualAddr, zip: val });
+                              }} 
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              className="w-1/2 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-primary/50 placeholder-white/20" 
+                            />
                           </div>
                           <input type="text" placeholder="Country" required value={manualAddr.country} onChange={e => setManualAddr({ ...manualAddr, country: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-primary/50 placeholder-white/20" />
                         </div>
@@ -354,8 +386,9 @@ function CheckoutLoader() {
         promoCode,
       });
       setIntentData(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to init payment intent', err);
+      setInitError(err?.response?.data?.message || 'Failed to initialize payment gateway. Please try again.');
     }
   };
 
@@ -465,12 +498,20 @@ function PromoCodeInput({ promoInput, setPromoInput, promoError, appliedPromo, v
         <Tag className="w-3 h-3 text-brand-primary" /> Promo Code
       </label>
       {appliedPromo ? (
-        <div className="flex items-center justify-between bg-brand-primary/10 border border-brand-primary/30 rounded-xl px-4 py-3">
-          <div className="flex items-center gap-2">
-            <BadgePercent className="w-4 h-4 text-brand-primary" />
-            <span className="text-brand-primary font-black text-xs tracking-widest">{appliedPromo} — Applied!</span>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between bg-brand-primary/10 border border-brand-primary/30 rounded-xl px-4 py-3">
+            <div className="flex items-center gap-2">
+              <BadgePercent className="w-4 h-4 text-brand-primary" />
+              <span className="text-brand-primary font-black text-xs tracking-widest">{appliedPromo} — Applied!</span>
+            </div>
+            <button type="button" onClick={onRemove} className="text-white/30 hover:text-red-400 transition-colors flex items-center gap-1.5 group">
+              <span className="text-[8px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Change</span>
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <button type="button" onClick={onRemove} className="text-white/30 hover:text-red-400 transition-colors"><X className="w-4 h-4" /></button>
+          <p className="text-[9px] text-white/20 uppercase tracking-widest ml-1">
+            Click the 'X' to try a different manual code
+          </p>
         </div>
       ) : (
         <div className="flex gap-2">

@@ -154,6 +154,23 @@ export default function Account() {
   const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingAddr(true);
+    // --- Strict Validation ---
+    if (!newAddr.street.trim() || !newAddr.city.trim() || !newAddr.zip.trim() || !newAddr.country.trim()) {
+      toast.error("All address fields are mandatory.");
+      setSavingAddr(false);
+      return;
+    }
+    if (!/^\d+$/.test(newAddr.zip.trim())) {
+      toast.error("ZIP code must be numeric digits only.");
+      setSavingAddr(false);
+      return;
+    }
+    if (newAddr.zip.trim().length < 4) {
+      toast.error("ZIP code must be at least 4 digits.");
+      setSavingAddr(false);
+      return;
+    }
+
     const updated = [
       ...addresses,
       { ...newAddr, isDefault: addresses.length === 0 },
@@ -763,10 +780,11 @@ export default function Account() {
                             />
                             <input
                               type="text"
+                              inputMode="numeric"
                               placeholder="ZIP"
                               value={newAddr.zip}
                               onChange={(e) =>
-                                setNewAddr({ ...newAddr, zip: e.target.value })
+                                setNewAddr({ ...newAddr, zip: e.target.value.replace(/\D/g, '') })
                               }
                               required
                               className="w-1/2 bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-primary/40 placeholder-white/20"
